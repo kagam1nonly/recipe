@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
-from .serializers import RecipeSerializer
+from .serializers import RecipeSerializer, IngredientSerializer
 from django.http import HttpResponse
+from .models import Recipe_app, Ingredient
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 def home(request):
     return HttpResponse("Welcome to my Recipes!")
@@ -19,16 +21,7 @@ class Recipe_app(ModelViewSet):
         return super().list(request, *args, **kwargs)
     
     def post(self, request, format=None):
-        # Check if 'id' is provided in the request data
-        provided_id = request.data.get('id')
-        
-        if provided_id is not None:
-            # If 'id' is provided, use it
-            serializer = RecipeSerializer(data=request.data)
-        else:
-            # If 'id' is not provided, let Django auto-generate it
-            serializer = RecipeSerializer(data=request.data)
-            
+        serializer = RecipeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -63,11 +56,11 @@ class Recipe_app(ModelViewSet):
             except self.serializer_class.Meta.model.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
-            # Handle the case where no pk is provided, e.g., to list all recipes.
+            # No pk provided, list all recipes.
             recipes = self.serializer_class.Meta.model.objects.all()
             serializer = RecipeSerializer(recipes, many=True)
             return Response(serializer.data)
-        
+    
     def delete(self, request, pk, *args, **kwargs):
         try:
             self.serializer_class.Meta.model.objects.get(id=pk).delete()
@@ -75,5 +68,10 @@ class Recipe_app(ModelViewSet):
         except self.serializer_class.Meta.model.DoesNotExist:
             return Response(status=status.HTTP_400_NOT_FOUND)
         
-    # Define the allowed HTTP methods explicitly
-    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
+class IngredientListCreateView(ListCreateAPIView):
+            queryset = Ingredient.objects.all()
+            serializer_class = IngredientSerializer
+
+class IngredientDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
