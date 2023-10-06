@@ -1,14 +1,13 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from .serializers import RecipeSerializer, IngredientSerializer
-from django.http import HttpResponse
-from .models import Recipe_app, Ingredient
+from .models import Ingredient
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
-def home(request):
-    return HttpResponse("Welcome to my Recipes!")
+def index(request):
+    return render(request, 'index.html')
 
 class Recipe_app(ModelViewSet):
     
